@@ -186,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         backgroundColor: Colors.transparent,
                         content: AwesomeSnackbarContent(
                           title: 'Yah, Login Gagal!',
-                          message: "${value.data['message']}",
+                          message: "Maaf, Email/Password yang anda masukkan salah!",
 
                           /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
                           contentType: ContentType.failure,
