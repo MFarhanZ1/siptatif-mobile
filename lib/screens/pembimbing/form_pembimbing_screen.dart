@@ -10,6 +10,8 @@ class FormPembimbingScreen extends StatefulWidget {
 class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Center(
+      child: Card(child: Text("data : pembimbing dong")),
+    );
   }
 }
