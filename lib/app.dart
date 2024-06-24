@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:siptatif_mobile/configs/dio_client.dart';
 import 'package:siptatif_mobile/configs/secure_storage.dart';
 import 'package:siptatif_mobile/screens/mahasiswa/main_mahasiswa_screen.dart';
 import 'package:siptatif_mobile/screens/pembimbing/main_pembimbing_screen.dart';
@@ -42,6 +43,8 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+    DioClient.addInterceptors(context);
+
   }
 
   Container _bottomNavigationBar() {

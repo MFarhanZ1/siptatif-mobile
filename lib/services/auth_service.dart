@@ -18,4 +18,16 @@ class AuthService {
         data: data,
     );
   }
+
+  Future<Response> refreshToken(Map<String, dynamic> data) async {
+    return await _dio.post(
+        "/mobile/refresh-access-token",
+        data: data,
+        options: Options(
+          validateStatus: (status) {
+        return status != null && status <= 500;
+      }
+        )
+    );
+  }
 }
