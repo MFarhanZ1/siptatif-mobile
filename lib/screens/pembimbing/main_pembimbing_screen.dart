@@ -16,27 +16,43 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
   List<dynamic> _pembimbingList = [];
   List<dynamic> _dosenAllList = [];
   dynamic _selectedDosen;
-  bool _loadingform = false;
+  dynamic _selectedDosenCallback;
 
   bool _isLoading = true;
   bool _showForm = false; // Tambahkan variabel ini
   bool _buttonUpdate = false; // Tambahkan variabel ini
 
   String _inputValue = '';
+  String _inputValueKuota = '';
   // callback dari list
   void _onUpdateButtonPressed(Map<String, dynamic> item) {
     setState(() {
-      _showForm = !_showForm;
-      _selectedDosen = item;
-      _buttonUpdate = !_buttonUpdate;
+      _showForm = true;
+      _selectedDosenCallback = item;
+      _buttonUpdate = true;
+    });
+  }
+
+  Future<void> _searchDataPembimbing({searchs = ''}) async {
+    _pembimbingService.searchDataPembimbing(search: searchs).then((value) {
+      setState(() {});
+      if (value.data['response']) {
+        setState(() {
+          _pembimbingList = value.data['results'];
+        });
+      } else {
+        setState(() {
+          _pembimbingList = [];
+        });
+      }
     });
   }
 
   void _onDeleteButtonPressed(Map<String, dynamic> item) {
     setState(() {
-      _selectedDosen = item;
+      _selectedDosenCallback = item;
     });
-    _pembimbingService.deletePembimbing(_selectedDosen['nidn']);
+    _pembimbingService.deletePembimbing(_selectedDosenCallback['nidn']);
   }
 
   @override
@@ -44,14 +60,16 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
     super.initState();
     _getAllPembimbing(); // Panggil metode async di dalam initState
     getAllDataDosen();
+    _searchDataPembimbing();
   }
 
-  void getAllDataDosen() async {
+  Future<void> getAllDataDosen() async {
     try {
       await _dataDosenService.getAllDosen().then((value) {
-        print(value.data['results']);
+        // print(value.data['results']);
         setState(() {
           _dosenAllList = value.data['results'] ?? [];
+          // print(_dosenAllList);
           if (_dosenAllList.isNotEmpty) {
             _selectedDosen = _dosenAllList[0];
           }
@@ -86,8 +104,11 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(children: [
-          if (!_showForm) ...[
+          if (_showForm == false) ...[
             TextField(
+              onChanged: (value) {
+                _searchDataPembimbing(searchs: value);
+              },
               decoration: InputDecoration(
                   floatingLabelStyle:
                       TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
@@ -134,30 +155,157 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Pilih Dosen Pembimbing',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
                       const SizedBox(height: 10),
-                      if (!_buttonUpdate) ...[
+                      // UNTUK FROM TAMBAH DOSEN
+                      if (_buttonUpdate == false) ...[
+                        Text(
+                          'Pilih Dosen Pembimbing',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
                         DropdownButton<dynamic>(
                           value: _selectedDosen,
-                          items: _dosenAllList.map((e) {
-                            return DropdownMenuItem<dynamic>(
-                              value: e,
-                              child: Text(e['nama']),
-                            );
-                          }).toList(),
-                          onChanged: (dynamic? val) {
+                          items: _dosenAllList
+                              .map((e) => DropdownMenuItem<dynamic>(
+                                    child: Text(e[
+                                        'nama']), // Mengakses properti 'nama' menggunakan kunci peta
+                                    value: e,
+                                  ))
+                              .toList(),
+                          onChanged: (dynamic val) {
                             setState(() {
-                              _selectedDosen = val;
+                              _selectedDosen =
+                                  val; // Memperbarui nilai _selectedDosen saat dropdown berubah
                             });
                           },
                         ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'NIDN Pembimbing',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        SizedBox(
+                          child: TextField(
+                            controller: TextEditingController(
+                                text: _selectedDosen['nidn']),
+                            enabled: false,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              hintText: 'NIDN Pembimbing',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'KUOTA',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        SizedBox(
+                          child: TextField(
+                            style: TextStyle(height: 1),
+                            keyboardType:
+                                TextInputType.number, // To ensure number input
+                            onChanged: (value) {
+                              _inputValueKuota = value;
+                            },
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              hintText: 'KUOTA Penguji',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _showForm = false;
+                                  _buttonUpdate = false;
+                                });
+                                // Tombol Kembali untuk kembali ke layar sebelumnya
+                              },
+                              child: Text('Kembali'),
+                            ),
+                            const SizedBox(width: 8),
+                            ElevatedButton(
+                              onPressed: () {
+                                _pembimbingService.createPembimbing({
+                                  "nidn": _selectedDosen['nidn'],
+                                  "kuota": _inputValueKuota.toString()
+                                }).then((value) {
+                                  print(
+                                      "responnyaaq  ${value.data['response']}");
+                                  if (value.data['response']) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: Text('Sukses'),
+                                          content:
+                                              Text('Data berhasil terkirim!'),
+                                          actions: <Widget>[
+                                            TextButton(
+                                              onPressed: () {
+                                                _showForm = false;
+                                                // Tutup dialog
+                                              },
+                                              child: Text('OK'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  } else {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: Text('Error'),
+                                          content: Text(
+                                              'Terjadi kesalahan saat mengirim data'),
+                                          actions: <Widget>[
+                                            TextButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  _showForm = false;
+                                                  Navigator.of(context).pop();
+                                                }); // Tutup dialog
+                                              },
+                                              child: Text('OK'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+                                  }
+                                });
+                              },
+                              child: Text('Kirim'),
+                            ),
+                          ],
+                        ),
+                        // UNTUK FORM EDIT DOSEN
                       ] else ...[
                         Text(
                           'Nama',
@@ -171,7 +319,7 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
                         SizedBox(
                           child: TextField(
                             controller: TextEditingController(
-                                text: _selectedDosen?['nama']),
+                                text: _selectedDosenCallback?['nama']),
                             enabled: false,
                             decoration: InputDecoration(
                               border: OutlineInputBorder(
@@ -181,140 +329,127 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
                             ),
                           ),
                         ),
-                      ]
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'NIDN Pembimbing',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 17,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  SizedBox(
-                    child: TextField(
-                      controller:
-                          TextEditingController(text: _selectedDosen?['nidn']),
-                      enabled: false,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.0),
+                        const SizedBox(height: 20),
+                        Text(
+                          'NIDN Pembimbing',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                            letterSpacing: -0.5,
+                          ),
                         ),
-                        hintText: 'NIDN Pembimbing',
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'KUOTA',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 17,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  SizedBox(
-                    child: TextField(
-                      style: TextStyle(height: 1),
-                      keyboardType: TextInputType.number,
-                      onChanged: (value) {
-                        setState(() {
-                          _inputValue = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.0),
+                        const SizedBox(height: 5),
+                        SizedBox(
+                          child: TextField(
+                            controller: TextEditingController(
+                                text: _selectedDosenCallback['nidn']),
+                            enabled: false,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              hintText: 'NIDN Pembimbing',
+                            ),
+                          ),
                         ),
-                        hintText: 'KUOTA Pembimbing',
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _showForm = false;
-                          });
-                        },
-                        child: Text('Kembali'),
-                      ),
-                      const SizedBox(width: 8),
-                      if (_buttonUpdate) ...[
-                        ElevatedButton(
-                          onPressed: () {
-                            _pembimbingService.updatePembimbing(
-                                {"kuota": _inputValue},
-                                _selectedDosen?['nidn']);
-                          },
-                          child: Text('Update'),
+                        const SizedBox(height: 20),
+                        Text(
+                          'KUOTA',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                            letterSpacing: -0.5,
+                          ),
                         ),
-                      ] else ...[
-                        ElevatedButton(
-                          onPressed: () {
-                            _loadingform = true;
-                            _pembimbingService.createPembimbing({
-                              "nidn": _selectedDosen?['nidn'],
-                              "kuota": _inputValue
-                            }).then((value) {
-                              _loadingform = false;
-                              print(value.data['response']);
-                              if (value.data['response']) {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: Text('Sukses'),
-                                      content: Text('Data berhasil terkirim!'),
-                                      actions: <Widget>[
-                                        TextButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              _showForm = false;
-                                              Navigator.of(context).pop();
-                                            }); // Kembali ke layar sebelumnya
-                                          },
-                                          child: Text('OK'),
-                                        ),
-                                      ],
+                        const SizedBox(height: 5),
+                        SizedBox(
+                          child: TextField(
+                            style: TextStyle(height: 1),
+                            keyboardType: TextInputType.number,
+                            onChanged: (value) {
+                              setState(() {
+                                _inputValue = value;
+                              });
+                            },
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                              hintText: 'KUOTA Pembimbing',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _showForm = false;
+                                  _buttonUpdate = false;
+                                });
+                              },
+                              child: Text('Kembali'),
+                            ),
+                            const SizedBox(width: 8),
+                            ElevatedButton(
+                              onPressed: () {
+                                _pembimbingService.updatePembimbing({
+                                  "kuota": _inputValue
+                                }, _selectedDosenCallback?['nidn']).then(
+                                    (value) {
+                                  if (value.data['response']) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: Text('Sukses'),
+                                          content:
+                                              Text('Data berhasil Terupdate!'),
+                                          actions: <Widget>[
+                                            TextButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  _showForm = false;
+                                                  Navigator.of(context).pop();
+                                                }); // Kembali ke layar sebelumnya
+                                              },
+                                              child: Text('OK'),
+                                            ),
+                                          ],
+                                        );
+                                      },
                                     );
-                                  },
-                                );
-                              } else {
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: Text('Error'),
-                                      content: Text(
-                                          'Terjadi kesalahan saat mengirim data'),
-                                      actions: <Widget>[
-                                        TextButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              _showForm = false;
-                                              Navigator.of(context).pop();
-                                            }); // Tutup dialog
-                                          },
-                                          child: Text('OK'),
-                                        ),
-                                      ],
+                                  } else {
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: Text('Error'),
+                                          content: Text(
+                                              'Terjadi kesalahan saat edit data'),
+                                          actions: <Widget>[
+                                            TextButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  _showForm = false;
+                                                  Navigator.of(context).pop();
+                                                }); // Tutup dialog
+                                              },
+                                              child: Text('OK'),
+                                            ),
+                                          ],
+                                        );
+                                      },
                                     );
-                                  },
-                                );
-                              }
-                            });
-                            // Handle kirim action
-                          },
-                          child: Text('Kirim'),
+                                  }
+                                });
+                              },
+                              child: Text('Update'),
+                            ),
+                          ],
                         ),
                       ]
                     ],
@@ -327,9 +462,9 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          setState(() {
-            _showForm = !_showForm;
-          });
+          Navigator.pushNamed(
+            context, "/form-pembimbing"
+          );
         },
         child: Icon(_showForm ? Icons.list : Icons.add),
       ),

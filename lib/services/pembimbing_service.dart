@@ -28,7 +28,9 @@ class PembimbingService {
       options: options,
     );
   }
-  Future<Response<dynamic>> updatePembimbing(Map<String, dynamic> data, nidn) async {
+
+  Future<Response<dynamic>> updatePembimbing(
+      Map<String, dynamic> data, nidn) async {
     String? accessToken = await SecureStorage().readSecureData('accessToken');
 
     // Menambahkan header Authorization ke dalam permintaan
@@ -52,4 +54,18 @@ class PembimbingService {
       options: options,
     );
   }
-}
+
+  Future<Response<dynamic>> searchDataPembimbing( {final search = ''}) async {
+    String? accessToken = await SecureStorage().readSecureData('accessToken');
+    Options options = Options(headers: {
+      'Authorization': 'Bearer $accessToken',
+    });
+    return await _dio.get(
+      "/pembimbing?search=$search",
+      options: options
+    );
+  }
+
+    
+  }
+
