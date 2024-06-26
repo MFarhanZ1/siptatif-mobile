@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:siptatif_mobile/services/mahasiswa_service.dart';
@@ -12,6 +11,9 @@ class MainMahasiswaScreen extends StatefulWidget {
 }
 
 class _MainMahasiswaScreenState extends State<MainMahasiswaScreen> {
+  List<String> statusList = ['MENUNGGU', 'SETUJU', 'DITOLAK', ''];
+  int statusIndex = 0;
+
   var searchField = '';
   final _mahasiswaService = MahasiswaService();
   late List mahasiswaData = [];
@@ -24,17 +26,21 @@ class _MainMahasiswaScreenState extends State<MainMahasiswaScreen> {
     fetchMahasiswaData();
   }
 
-  Future<void> fetchMahasiswaData({searchs = ''}) async {
+  Future<void> fetchMahasiswaData({searchs = '', statuses = ''}) async {
     setState(() {
       isLoading = true;
     });
-    _mahasiswaService.getTugasAkhir(search: searchs).then((value) {
+    _mahasiswaService
+        .getTugasAkhir(
+            search: searchs == '' ? searchField : searchs,
+            status: statuses == '' ? statusList[statusIndex] : statuses)
+        .then((value) {
       setState(() {
         isLoading = false;
       });
       if (value.data['response']) {
         setState(() {
-          mahasiswaData = value.data['results'];
+          mahasiswaData = value.data['results'] ?? [];
         });
       } else {
         setState(() {
@@ -45,21 +51,50 @@ class _MainMahasiswaScreenState extends State<MainMahasiswaScreen> {
   }
 
   Widget _notFound() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(Icons.search_off_rounded, size: 80,),
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Text(
-              "Waduh mas, datanya kagak ada nih, coba cari pake keyword lain yak bro...",
-              textAlign: TextAlign.center,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Icon(
+          Icons.search_off_rounded,
+          size: 80,
+        ),
+        const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Text(
+            "Waduh mas, datanya kagak ada nih, belom ada list tugas akhir nya mas...",
+            textAlign: TextAlign.center,
+          ),
+        ),
+        SizedBox(
+          height: 3,
+        ),
+        ElevatedButton(
+            onPressed: () => {fetchMahasiswaData()},
+            style: ButtonStyle(
+              padding: WidgetStateProperty.all(EdgeInsets.symmetric(horizontal: 12)),
+              shape: WidgetStateProperty.all(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                )
+              ),
+              backgroundColor: WidgetStateProperty.all(Color.fromARGB(255, 251, 224, 255)),
+              elevation: WidgetStateProperty.all(0.0),
             ),
-          )
-        ],
-      ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.refresh, color: Colors.black,),
+                SizedBox(
+                  width: 4,
+                ),
+                Text('Tap to Refresh', style: TextStyle(
+                  color: Colors.black
+                ),),
+              ],
+            ))
+      ],
     );
   }
 
@@ -73,18 +108,59 @@ class _MainMahasiswaScreenState extends State<MainMahasiswaScreen> {
           children: [
             Column(
               children: [
-                TextField(
-                  onChanged: (search) => {
-                    fetchMahasiswaData(searchs: search),
-                  },
-                  style: const TextStyle(height: 1),
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        onChanged: (search) => {
+                          searchField = search,
+                          fetchMahasiswaData(searchs: search),
+                        },
+                        style: const TextStyle(height: 1),
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          hintText: 'Cari berdasar nim, nama, dan judul ta...',
+                        ),
+                      ),
                     ),
-                    hintText: 'Cari berdasar nim, nama, dan judul ta...',
-                  ),
+                    const SizedBox(
+                      width: 5,
+                    ),
+                    IconButton(
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStateProperty.all(
+                              const Color.fromARGB(255, 173, 195, 255)),
+                          shape: WidgetStateProperty.all(
+                            RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: const BorderSide(
+                                  color: Color.fromARGB(255, 0, 0, 0),
+                                  width: 1,
+                                )),
+                          ),
+                        ),
+                        onPressed: () {
+                          statusIndex = (statusIndex + 1) % statusList.length;
+                          String currentStatus = statusList[statusIndex];
+
+                          ScaffoldMessenger.of(context)
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(SnackBar(
+                            content: Text(
+                                "Filter TA berdasarkan status: ${capitalizeFirstLetterOfEachWord(currentStatus == '' ? 'Semua Data' : currentStatus)}"),
+                          ));
+
+                          fetchMahasiswaData(
+                              searchs: searchField, statuses: currentStatus);
+                        },
+                        icon: const Icon(
+                          Icons.filter_alt,
+                          size: 30,
+                        ))
+                  ],
                 ),
                 const SizedBox(
                   height: 8,
@@ -166,7 +242,7 @@ class _MainMahasiswaScreenState extends State<MainMahasiswaScreen> {
       color: _warnaStatusCard(mhs['status']),
       margin: const EdgeInsets.symmetric(vertical: 7),
       child: Padding(
-        padding: const EdgeInsets.all(13),
+        padding: const EdgeInsets.all(11),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -184,7 +260,8 @@ class _MainMahasiswaScreenState extends State<MainMahasiswaScreen> {
                 thickness: 0.8,
               ),
               const SizedBox(height: 4),
-              Text('"${mhs['judul_ta']}" [${mhs['no_reg_ta']}]', textAlign: TextAlign.start),
+              Text('"${mhs['judul_ta']}" [${mhs['no_reg_ta']}]',
+                  textAlign: TextAlign.start),
               const SizedBox(height: 4),
               Row(
                 children: [
@@ -192,23 +269,27 @@ class _MainMahasiswaScreenState extends State<MainMahasiswaScreen> {
                     padding:
                         const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                       color: _warnaStatusCard(mhs['status'], shade: 200),
                     ),
                     child: Text(
-                      mhs['status'],
+                      capitalizeFirstLetterOfEachWord(mhs['status']) == 'Setuju'
+                          ? 'Disetujui'
+                          : capitalizeFirstLetterOfEachWord(mhs['status']),
                       style: const TextStyle(
                         fontFamily: "Montserrat-SemiBold",
                         letterSpacing: -0.5,
                       ),
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(
+                    width: 4,
+                  ),
                   IconButton(
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
+                      backgroundColor: WidgetStateProperty.all(
                           const Color.fromARGB(255, 241, 199, 93)),
-                      shape: MaterialStateProperty.all(
+                      shape: WidgetStateProperty.all(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -219,7 +300,9 @@ class _MainMahasiswaScreenState extends State<MainMahasiswaScreen> {
                         context,
                         "/form-mahasiswa",
                         arguments: mhs,
-                      );
+                      ).then((value) => {
+                            fetchMahasiswaData(),
+                          });
                     },
                     icon: const Icon(Icons.remove_red_eye_rounded),
                   ),
