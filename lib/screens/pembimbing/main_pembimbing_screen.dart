@@ -1,4 +1,7 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:siptatif_mobile/screens/pembimbing/form_pembimbing_screen.dart';
 import 'package:siptatif_mobile/services/dosen_service.dart';
 import 'package:siptatif_mobile/services/pembimbing_service.dart';
 
@@ -19,18 +22,20 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
   dynamic _selectedDosenCallback;
 
   bool _isLoading = true;
-  bool _showForm = false; // Tambahkan variabel ini
-  bool _buttonUpdate = false; // Tambahkan variabel ini
+  bool _showForm = false;
+  bool _editMode = false;
+  // Tambahkan variabel ini
+  // bool _buttonUpdate = false; // Tambahkan variabel ini
 
-  String _inputValue = '';
-  String _inputValueKuota = '';
+  // String _inputValue = '';
+  // String _inputValueKuota = '';
   // callback dari list
   void _onUpdateButtonPressed(Map<String, dynamic> item) {
     setState(() {
-      _showForm = true;
-      _selectedDosenCallback = item;
-      _buttonUpdate = true;
+      _editMode = true;
     });
+    Navigator.pushNamed(context, '/form-pembimbing',
+        arguments: {'pembimbing': item, 'editMode': _editMode});
   }
 
   Future<void> _searchDataPembimbing({searchs = ''}) async {
@@ -52,32 +57,54 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
     setState(() {
       _selectedDosenCallback = item;
     });
-    _pembimbingService.deletePembimbing(_selectedDosenCallback['nidn']);
+    _pembimbingService
+        .deletePembimbing(_selectedDosenCallback['nidn'])
+        .then((value) {
+      if (value.data['response']) {
+        _searchDataPembimbing();
+
+        var snackBar = SnackBar(
+          /// need to set following properties for best effect of awesome_snackbar_content
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: AwesomeSnackbarContent(
+            title: 'Berhasil!',
+            message: "${value.data['message']}",
+
+            /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+            contentType: ContentType.success,
+          ),
+        );
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
+      } else {
+        var snackBar = SnackBar(
+          /// need to set following properties for best effect of awesome_snackbar_content
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: AwesomeSnackbarContent(
+            title: 'hey, Kamu ngapain ?',
+            message: "${value.data['message']}",
+
+            /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+            contentType: ContentType.success,
+          ),
+        );
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
+      }
+    });
   }
 
   @override
   void initState() {
     super.initState();
     _getAllPembimbing(); // Panggil metode async di dalam initState
-    getAllDataDosen();
     _searchDataPembimbing();
-  }
-
-  Future<void> getAllDataDosen() async {
-    try {
-      await _dataDosenService.getAllDosen().then((value) {
-        // print(value.data['results']);
-        setState(() {
-          _dosenAllList = value.data['results'] ?? [];
-          // print(_dosenAllList);
-          if (_dosenAllList.isNotEmpty) {
-            _selectedDosen = _dosenAllList[0];
-          }
-        });
-      });
-    } catch (e) {
-      print(e);
-    }
   }
 
   Future<void> _getAllPembimbing() async {
@@ -102,369 +129,70 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(13.0),
         child: Column(children: [
-          if (_showForm == false) ...[
-            TextField(
-              onChanged: (value) {
-                _searchDataPembimbing(searchs: value);
-              },
-              decoration: InputDecoration(
-                  floatingLabelStyle:
-                      TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
-                  hintMaxLines: 1,
-                  labelText: "Dosen Pembimbing",
-                  labelStyle: TextStyle(color: Colors.black),
-                  border: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black),
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.black),
-                  ),
-                  errorBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(
-                        color: Colors.red), // Contoh untuk border error
-                  ),
-                  fillColor: Colors.blueAccent,
-                  focusColor: Colors.black,
-                  prefixIcon: IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.search),
-                  ),
-                  hintText: "Search"),
+          TextField(
+            onChanged: (value) {
+              _searchDataPembimbing(searchs: value);
+            },
+            decoration: InputDecoration(
+                floatingLabelStyle:
+                    TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+                hintMaxLines: 1,
+                labelText: "Dosen Pembimbing",
+                labelStyle: TextStyle(color: Colors.black),
+                border: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.black),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.black),
+                ),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.black),
+                ),
+                errorBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                      color: Colors.red), // Contoh untuk border error
+                ),
+                fillColor: Colors.blueAccent,
+                focusColor: Colors.black,
+                prefixIcon: IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.search),
+                ),
+                hintText: "Search"),
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              child: _isLoading // Tampilkan loading jika sedang memuat data
+                  ? Center(
+                      child: LoadingAnimationWidget.discreteCircle(
+                        color: const Color.fromARGB(255, 241, 199, 93),
+                        size: 60,
+                      ),
+                    )
+                  : (_pembimbingList.isEmpty
+                      ? _notFound()
+                      : ListPembimbing(_pembimbingList, _onUpdateButtonPressed,
+                          _onDeleteButtonPressed)),
+              onRefresh: _getAllPembimbing,
             ),
-            Expanded(
-              child: RefreshIndicator(
-                child: _isLoading // Tampilkan loading jika sedang memuat data
-                    ? Center(child: CircularProgressIndicator())
-                    : ListPembimbing(_pembimbingList, _onUpdateButtonPressed,
-                        _onDeleteButtonPressed),
-                onRefresh: _getAllPembimbing,
-              ),
-              // Tampilkan data jika sudah selesai memuat
-            ),
-          ] else ...[
-            SingleChildScrollView(
-              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 10),
-                      // UNTUK FROM TAMBAH DOSEN
-                      if (_buttonUpdate == false) ...[
-                        Text(
-                          'Pilih Dosen Pembimbing',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        DropdownButton<dynamic>(
-                          value: _selectedDosen,
-                          items: _dosenAllList
-                              .map((e) => DropdownMenuItem<dynamic>(
-                                    child: Text(e[
-                                        'nama']), // Mengakses properti 'nama' menggunakan kunci peta
-                                    value: e,
-                                  ))
-                              .toList(),
-                          onChanged: (dynamic val) {
-                            setState(() {
-                              _selectedDosen =
-                                  val; // Memperbarui nilai _selectedDosen saat dropdown berubah
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          'NIDN Pembimbing',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        SizedBox(
-                          child: TextField(
-                            controller: TextEditingController(
-                                text: _selectedDosen['nidn']),
-                            enabled: false,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                              hintText: 'NIDN Pembimbing',
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          'KUOTA',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        SizedBox(
-                          child: TextField(
-                            style: TextStyle(height: 1),
-                            keyboardType:
-                                TextInputType.number, // To ensure number input
-                            onChanged: (value) {
-                              _inputValueKuota = value;
-                            },
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                              hintText: 'KUOTA Penguji',
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  _showForm = false;
-                                  _buttonUpdate = false;
-                                });
-                                // Tombol Kembali untuk kembali ke layar sebelumnya
-                              },
-                              child: Text('Kembali'),
-                            ),
-                            const SizedBox(width: 8),
-                            ElevatedButton(
-                              onPressed: () {
-                                _pembimbingService.createPembimbing({
-                                  "nidn": _selectedDosen['nidn'],
-                                  "kuota": _inputValueKuota.toString()
-                                }).then((value) {
-                                  print(
-                                      "responnyaaq  ${value.data['response']}");
-                                  if (value.data['response']) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: Text('Sukses'),
-                                          content:
-                                              Text('Data berhasil terkirim!'),
-                                          actions: <Widget>[
-                                            TextButton(
-                                              onPressed: () {
-                                                _showForm = false;
-                                                // Tutup dialog
-                                              },
-                                              child: Text('OK'),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  } else {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: Text('Error'),
-                                          content: Text(
-                                              'Terjadi kesalahan saat mengirim data'),
-                                          actions: <Widget>[
-                                            TextButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  _showForm = false;
-                                                  Navigator.of(context).pop();
-                                                }); // Tutup dialog
-                                              },
-                                              child: Text('OK'),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  }
-                                });
-                              },
-                              child: Text('Kirim'),
-                            ),
-                          ],
-                        ),
-                        // UNTUK FORM EDIT DOSEN
-                      ] else ...[
-                        Text(
-                          'Nama',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        SizedBox(
-                          child: TextField(
-                            controller: TextEditingController(
-                                text: _selectedDosenCallback?['nama']),
-                            enabled: false,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                              hintText: 'Nama Dosen',
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          'NIDN Pembimbing',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        SizedBox(
-                          child: TextField(
-                            controller: TextEditingController(
-                                text: _selectedDosenCallback['nidn']),
-                            enabled: false,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                              hintText: 'NIDN Pembimbing',
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          'KUOTA',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        SizedBox(
-                          child: TextField(
-                            style: TextStyle(height: 1),
-                            keyboardType: TextInputType.number,
-                            onChanged: (value) {
-                              setState(() {
-                                _inputValue = value;
-                              });
-                            },
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                              hintText: 'KUOTA Pembimbing',
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  _showForm = false;
-                                  _buttonUpdate = false;
-                                });
-                              },
-                              child: Text('Kembali'),
-                            ),
-                            const SizedBox(width: 8),
-                            ElevatedButton(
-                              onPressed: () {
-                                _pembimbingService.updatePembimbing({
-                                  "kuota": _inputValue
-                                }, _selectedDosenCallback?['nidn']).then(
-                                    (value) {
-                                  if (value.data['response']) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: Text('Sukses'),
-                                          content:
-                                              Text('Data berhasil Terupdate!'),
-                                          actions: <Widget>[
-                                            TextButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  _showForm = false;
-                                                  Navigator.of(context).pop();
-                                                }); // Kembali ke layar sebelumnya
-                                              },
-                                              child: Text('OK'),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  } else {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          title: Text('Error'),
-                                          content: Text(
-                                              'Terjadi kesalahan saat edit data'),
-                                          actions: <Widget>[
-                                            TextButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  _showForm = false;
-                                                  Navigator.of(context).pop();
-                                                }); // Tutup dialog
-                                              },
-                                              child: Text('OK'),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  }
-                                });
-                              },
-                              child: Text('Update'),
-                            ),
-                          ],
-                        ),
-                      ]
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+            // Tampilkan data jika sudah selesai memuat
+          ),
         ]),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pushNamed(
-            context, "/form-pembimbing"
-          );
+          setState(() {
+            _editMode = false;
+          });
+          Navigator.pushNamed(context, "/form-pembimbing", arguments: {
+            'pembimbing': null,
+            'editMode': _editMode,
+          })
+              .then((value) => {
+                    _searchDataPembimbing(),
+                  });
         },
         child: Icon(_showForm ? Icons.list : Icons.add),
       ),
@@ -488,172 +216,221 @@ Widget ListPembimbing(
       var kuota_awal = pembimbing['kuota_awal'] ?? 0;
       var keahlian = pembimbing['keahlian'] ?? 'Keahlian Belum Diisi';
 
-      return Card(
-        elevation: 0,
-        color: Colors.grey[200],
-        margin: const EdgeInsets.fromLTRB(0, 16.0, 0, 0),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Row(children: [
-                            Icon(
-                              Icons.account_circle_rounded,
-                              size: 15,
-                            ),
-                            SizedBox(
-                              width: 3,
-                            ),
-                            Text(
-                              nama,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: -0.3,
-                              ),
-                            ),
-                          ]),
-                          Row(
-                            children: [
+      return GestureDetector(
+        onLongPress: () {
+          Scaffold.of(context).showBottomSheet((context) => Container(
+                color: Colors.white,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.edit),
+                      onPressed: () {
+                        // Panggil fungsi onEditButtonPressed dengan pembimbing sebagai argumen
+                        onEditButtonPressed(pembimbing);
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () {
+                        // Panggil fungsi onDeleteButtonPressed dengan pembimbing sebagai argumen
+                        onDeleteButtonPressed(pembimbing);
+                      },
+                    ),
+                  ],
+                ),
+              ));
+        },
+        child: Card(
+          elevation: 0,
+          color: Colors.grey[200],
+          margin: const EdgeInsets.fromLTRB(0, 16.0, 0, 0),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Row(children: [
                               Icon(
-                                Icons.calendar_view_day_rounded,
+                                Icons.account_circle_rounded,
                                 size: 15,
                               ),
                               SizedBox(
                                 width: 3,
                               ),
                               Text(
-                                ndin,
+                                nama,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: -0.3,
                                 ),
-                              )
-                            ],
+                              ),
+                            ]),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.calendar_view_day_rounded,
+                                  size: 15,
+                                ),
+                                SizedBox(
+                                  width: 3,
+                                ),
+                                Text(
+                                  ndin,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: -0.3,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ],
+                        )
+                      ],
+                    ),
+                    SizedBox(
+                      height: 4,
+                    ),
+                    Divider(
+                      height: 1,
+                      color: Colors.black,
+                      thickness: 0.8,
+                    ),
+                    SizedBox(
+                      height: 4,
+                    ),
+                    Text(
+                      keahlian,
+                      textAlign: TextAlign.start,
+                    ),
+                    SizedBox(
+                      height: 4,
+                    ),
+                    Row(
+                      children: [
+                        Container(
+                          padding:
+                              EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.amber[200],
                           ),
-                        ],
-                      )
-                    ],
-                  ),
-                  SizedBox(
-                    height: 4,
-                  ),
-                  Divider(
-                    height: 1,
-                    color: Colors.black,
-                    thickness: 0.8,
-                  ),
-                  SizedBox(
-                    height: 4,
-                  ),
-                  Text(
-                    keahlian,
-                    textAlign: TextAlign.start,
-                  ),
-                  SizedBox(
-                    height: 4,
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        padding:
-                            EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.amber[200],
-                        ),
-                        child: Text(
-                          kuota_awal.toString() + " Kuota Tersedia",
-                          style: TextStyle(
-                            fontFamily: "Montserrat-SemiBold",
-                            letterSpacing: -0.5,
+                          child: Text(
+                            kuota_awal.toString() + " Kuota Tersedia",
+                            style: TextStyle(
+                              fontFamily: "Montserrat-SemiBold",
+                              letterSpacing: -0.5,
+                            ),
                           ),
                         ),
-                      ),
-                      const Spacer(),
-                      IconButton.filledTonal(
-                        onPressed: () {
-                          onEditButtonPressed(pembimbing);
-                        },
-                        icon: Icon(Icons.edit_note_outlined),
-                      ),
-                      IconButton.filled(
-                        onPressed: () {
-                          showDialog<String>(
-                            context: context,
-                            builder: (BuildContext context) => Dialog(
-                              child: Padding(
-                                padding: const EdgeInsets.all(20.0),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    const Text(
-                                        'Apakah anda yakin ingin menghapus data dosen pembimbing ini?'),
-                                    const SizedBox(height: 15),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      child: Container(
-                                          padding: const EdgeInsets.all(15),
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            color: Colors.amber[100],
-                                          ),
-                                          child: const Text(
-                                            'Batalkan',
-                                            style: TextStyle(
-                                                color: Colors.black,
-                                                letterSpacing: -0.2),
-                                          )),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        onDeleteButtonPressed(pembimbing);
-                                        Navigator.pop(context);
-                                      },
-                                      child: Container(
-                                          padding: const EdgeInsets.all(15),
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                            color: Colors.red[100],
-                                          ),
-                                          child: const Text(
-                                            'Iya, Saya Yakin',
-                                            style: TextStyle(
-                                                color: Colors.black,
-                                                letterSpacing: -0.2),
-                                          )),
-                                    ),
-                                  ],
+                        const Spacer(),
+                        IconButton.filledTonal(
+                          onPressed: () {
+                            onEditButtonPressed(pembimbing);
+                          },
+                          icon: Icon(Icons.edit_note_outlined),
+                        ),
+                        IconButton.filled(
+                          onPressed: () {
+                            showDialog<String>(
+                              context: context,
+                              builder: (BuildContext context) => Dialog(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      const Text(
+                                          'Apakah anda yakin ingin menghapus data dosen pembimbing ini?'),
+                                      const SizedBox(height: 15),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: Container(
+                                            padding: const EdgeInsets.all(15),
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                              color: Colors.amber[100],
+                                            ),
+                                            child: const Text(
+                                              'Batalkan',
+                                              style: TextStyle(
+                                                  color: Colors.black,
+                                                  letterSpacing: -0.2),
+                                            )),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          onDeleteButtonPressed(pembimbing);
+                                          Navigator.pop(context);
+                                        },
+                                        child: Container(
+                                            padding: const EdgeInsets.all(15),
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                              color: Colors.red[100],
+                                            ),
+                                            child: const Text(
+                                              'Iya, Saya Yakin',
+                                              style: TextStyle(
+                                                  color: Colors.black,
+                                                  letterSpacing: -0.2),
+                                            )),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                        icon: Icon(Icons.delete_outline_sharp),
-                      )
-                    ],
-                  )
-                ],
-              )
-            ],
+                            );
+                          },
+                          icon: Icon(Icons.delete_outline_sharp),
+                        )
+                      ],
+                    )
+                  ],
+                )
+              ],
+            ),
           ),
         ),
       );
     },
+  );
+}
+
+// not found
+Widget _notFound() {
+  return const Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.search_off_rounded,
+          size: 80,
+        ),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Text(
+            "Waduh mas, datanya kagak ada nih, coba cari pake keyword lain yak bro...",
+            textAlign: TextAlign.center,
+          ),
+        )
+      ],
+    ),
   );
 }
