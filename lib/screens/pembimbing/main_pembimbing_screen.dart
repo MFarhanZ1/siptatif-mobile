@@ -2,7 +2,6 @@ import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:siptatif_mobile/components/loading_dialog_component.dart';
-import 'package:siptatif_mobile/services/dosen_service.dart';
 import 'package:siptatif_mobile/services/pembimbing_service.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
@@ -15,10 +14,8 @@ class MainPembimbingScreen extends StatefulWidget {
 
 class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
   final PembimbingService _pembimbingService = PembimbingService();
-  final DosenService _dataDosenService = DosenService();
 
   List<dynamic> _pembimbingList = [];
-  List<dynamic> _dosenAllList = [];
   dynamic _selectedDosenCallback;
 
   bool _isLoading = false;

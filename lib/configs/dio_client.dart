@@ -7,7 +7,6 @@ import 'package:siptatif_mobile/services/auth_service.dart';
 
 class DioClient {
   
-  final SecureStorage _secureStorage = SecureStorage();
   static final Dio _dio = Dio(
     BaseOptions(
       baseUrl: dotenv.env['BASE_URL'] ?? '',

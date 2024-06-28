@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:siptatif_mobile/components/loading_dialog_component.dart';
-import 'package:siptatif_mobile/services/dosen_service.dart';
 import 'package:siptatif_mobile/services/penguji_service.dart';
 
 class MainPengujiScreen extends StatefulWidget {
@@ -15,7 +14,6 @@ class MainPengujiScreen extends StatefulWidget {
 
 class _MainPengujiScreenState extends State<MainPengujiScreen> {
   final PengujiService _pengujiService = PengujiService();
-  final DosenService _dataDosenService = DosenService();
 
   List<dynamic> _pengujiList = [];
   dynamic _selectedDosenCallback;
