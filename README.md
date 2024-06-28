@@ -3,8 +3,15 @@
 - https://github.com/deaaprizal/cuymodoro -->
 
 <div align="center" style="margin-bottom: 59px;">
+    <b>Neo-SIPTATIF</b> was a mobile version of <a href="https://github.com/MFarhanZ1/siptatif"><b>SIPTATIF Web Based,</b></a> especially for Koordinator TA roles
+    </br>
+    Cek source code <b>versi web-nya lengkap beserta backend + database</b> direpo 👉🏻👉🏻 <b>https://github.com/MFarhanZ1/siptatif</b>
+</div>
+
+
+<div align="center" style="margin-bottom: 59px;">
   <a href="https://github.com/MFarhanZ1/siptatif">
-    <img width="650px" src="https://i.ibb.co.com/5csfJtF/dfnep.png" alt="RTNEPSQL Logo" />
+    <img width="650px" src="https://i.ibb.co.com/BTSYBRs/dfnepv2.png" alt="RTNEPSQL Logo" />
   </a>
 </div>
 
@@ -40,13 +47,13 @@
 
 [underconstruction]: https://img.shields.io/badge/Status-WIP-FFFF00?style=for-the-badge&logoColor=FFFF00
 
-## ✨ Apasih SIPTATIF Itu? ✨  // ✧˚ ༘ ⋆｡♡˚ ![underconstruction][underconstruction]
+## ✨ Apasih Neo-SIPTATIF Itu? ✨  // ✧˚ ༘ ⋆｡♡˚ ![underconstruction][underconstruction]
 
-**SIPTATIF** merupakan singkatan dari _Sistem Informasi Pendaftaran Tugas Akhir Teknik Infomatika_, aplikasi ini dibangun untuk memfasilitasi proses pendaftaran judul tugas akhir khususnya bagi mahasiswa program studi Teknik Informatika dikampus [Universitas Islam Negeri Sultan Syarif Kasim Riau](https://www.uin-suska.ac.id/), aplikasi ini juga dikembangkan untuk membantu kinerja koordinator tugas akhir dalam mengelola data dosen penguji, dosen pembimbing, dan status pendaftaran TA mahasiswa.
+**Neo-SIPTATIF** merupakan versi mobile dari [SIPTATIF Web Based](https://github.com/mfarhanz1/siptatif) yang telah saya kembangkan sebelumnya, untuk saat ini, aplikasi Neo-SIPTATIF masih diperuntukan khususnya bagi role Koordinator TA, **SIPTATIF** sendiri merupakan singkatan dari _Sistem Informasi Pendaftaran Tugas Akhir Teknik Infomatika_, aplikasi ini dibangun untuk memfasilitasi proses pendaftaran judul tugas akhir khususnya bagi mahasiswa program studi Teknik Informatika dikampus [Universitas Islam Negeri Sultan Syarif Kasim Riau](https://www.uin-suska.ac.id/), aplikasi ini juga dikembangkan untuk membantu kinerja koordinator tugas akhir dalam mengelola data dosen penguji, dosen pembimbing, dan status pendaftaran TA mahasiswa.
 
 ## ⚙️ Before You Begin
-Before you begin we recommend you read about the basic building blocks that assemble a ReactJS application with TailwindCSS, Node.js, Express, and PostgreSQL:
-* Flutter Official Website - Start with the [Flutter Official Website.](https://flutter.dev/) The Getting Started guide is very helpful.
+Before you begin we recommend you read about the basic building blocks that assemble a Dart mobile native application with Flutter Framework, Node.js, Express, and PostgreSQL:
+* Flutter Framework - Start with the [Flutter Official Website.](https://flutter.dev/) The Getting Started guide is very helpful.
 * Dart Programming Language - Visit the [Dart Official Website.](https://dart.dev/) The Dart Language Tour is a great place to start.
 * Node.js - Begin with the [Node.js Official Website](http://nodejs.org/) and refer to this [StackOverflow Thread](http://stackoverflow.com/questions/2353818/how-do-i-get-started-with-node-js) for additional resources.
 * Express - Understand Express through its [Official Website](http://expressjs.com/), which includes a [Getting Started](http://expressjs.com/starter/installing.html) guide and an [ExpressJS Guide](http://expressjs.com/en/guide/routing.html) for general topics. You can also explore this [StackOverflow Thread](http://stackoverflow.com/questions/8144214/learning-express-for-node-js) for more resources.
@@ -66,9 +73,13 @@ Aplikasi ini dirancang untuk memudahkan koordinator tugas akhir serta mahasiswa 
 - Manajemen Dosen Penguji: Tambahkan atau perbarui data dosen penguji, termasuk kuota yang tersedia untuk setiap dosen.
 - Manajemen Dosen Pembimbing: Kelola atau tambahkan informasi dosen pembimbing yang akan terlibat dalam proses tugas akhir, termasuk kuota yang tersedia.
 - Pengelolaan Data Mahasiswa, Meliputi: Periksa data mahasiswa, termasuk kelengkapan berkas yang telah diunggah, Berikan catatan atau feedback kepada mahasiswa terkait kekeliruan atau kekurangan berkas, Tetapkan status pendaftaran tugas akhir mahasiswa, apakah ditolak atau diterima.
+- Semisal koordinator ta menyetujui pengajuan TA mahasiswa, koordinator TA pun berhak menetapkan siapa penguji 1 dan penguji 2 bagi mahasiswa tersebut, lalu bisa di revisi nantinya jika penguji terkait berhalangan
 
 ## 👣 Skenario Penggunaan
 **Berikut skenario sederhana jika kita login sebagai aktor koordinator TA:**
+- Role Admin Prodi yang terdapat di [SIPTATIF Web Based](https://github.com/mfarhanz1/siptatif) akan melakukan pemberian jabatan atau wewenang terhadap suatu dosen.
+- Lalu, backend akan otomatis menjalankan procedure yang telah dibuat di-database, yang mana output akhirnya akan membuatkan akun dengan email beserta nidn sebagai password defaultnya
+- Setelah mendapatkan akun, Koordinator TA pun dapat melakukan reset password default yang telah ditetapkan sebelumnya untuk alasan keamanan
 - Login: Masuk menggunakan akun koordinator tugas akhir.
 - Manajemen Dosen Penguji: Tambahkan atau perbarui data dosen penguji, seperti kuota yang tersedia.
 - Manajemen Dosen Pembimbing: Kelola atau tambahkan informasi dosen pembimbing yang akan terlibat dalam proses tugas akhir, seperti kuota yang akan tersedia.
@@ -80,5 +91,5 @@ Kontribusi sangatlah penting karena memberikan kesempatan untuk belajar dan mend
 Jika kamu memiliki saran untuk meningkatkan proyek ini, kamu bisa melakukan fork dan membuat pull request, atau membuat issue baru untuk mendiskusikan perubahan yang diinginkan. Jangan lupa berikan bintang ya! Terima kasih!
 
 ## 📙 License
-[MIT License](LICENSE.md)  // ✧˚ ༘ ⋆｡♡˚ 
-[![License](https://img.shields.io/github/license/mfarhanz1/siptatif-mobile.svg)](https://github.com/mfarhanz1/siptatif-mobile/blob/master/LICENSE)
+[AGPL 3.0 Coverage](LICENSE.md)  // ✧˚ ༘ ⋆｡♡˚ 
+[![License](https://img.shields.io/github/license/mfarhanz1/siptatif.svg)](https://github.com/mfarhanz1/siptatif-mobile/blob/master/LICENSE)
