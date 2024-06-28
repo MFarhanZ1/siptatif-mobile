@@ -266,6 +266,7 @@ Widget ListPenguji(
       var ndin = penguji['nidn'] ?? '-';
       var nama = penguji['nama'] ?? '-';
       var kuota_awal = penguji['kuota_awal'] ?? 0;
+      var kuota_tersisa = penguji['kuota_tersisa'] ?? 0;
       var kuota_terpakai = penguji['kuota_terpakai'] ?? 0;
       var keahlian = penguji['keahlian'] ?? 'Keahlian Belum Diisi';
 
@@ -433,10 +434,10 @@ Widget ListPenguji(
                                 vertical: 8, horizontal: 10),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
-                              color: Colors.amber[200],
+                              color: const Color.fromARGB(255, 255, 229, 152),
                             ),
                             child: Text(
-                              kuota_awal.toString() + " Kuota Tersedia",
+                              "[${kuota_terpakai.toString()}/${kuota_awal.toString()}] Kuota Tersedia",
                               style: TextStyle(
                                 fontFamily: "Montserrat-SemiBold",
                                 letterSpacing: -0.5,
@@ -449,10 +450,10 @@ Widget ListPenguji(
                                 vertical: 8, horizontal: 10),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
-                              color: const Color.fromARGB(255, 130, 205, 255),
+                              color: Color.fromARGB(255, 244, 174, 255),
                             ),
                             child: Text(
-                              kuota_terpakai.toString() + " Kuota Terpakai",
+                              kuota_tersisa.toString() + " Kuota Tersisa",
                               style: TextStyle(
                                 fontFamily: "Montserrat-SemiBold",
                                 letterSpacing: -0.5,

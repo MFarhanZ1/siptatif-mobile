@@ -63,7 +63,6 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _checkLoginStatus();
   }
 
   Future<void> _checkLoginStatus() async {
@@ -76,7 +75,7 @@ class _SplashScreenState extends State<SplashScreen> {
         Navigator.pushReplacementNamed(context, '/dashboard');
       }
     } else {
-      if (mounted) { 
+      if (mounted) {
         // Token tidak ada, arahkan ke login
         Navigator.pushReplacementNamed(context, '/login');
       }
@@ -85,10 +84,41 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
+    return FutureBuilder(
+      future: Future.delayed(const Duration(seconds: 5)),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          // Delay selesai, arahkan ke halaman berikutnya
+          _checkLoginStatus();
+          return Container(
+            color: Color.fromARGB(255, 181, 181, 181),
+          );
+        } else {
+          // Tampilkan logo sampai delay selesai
+          return Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                Image.asset(
+                  "assets/img/siptatif-banner-intro-page.jpg",
+                  width: 338,
+                ),
+                const SizedBox(height: 30,),
+                const CircularProgressIndicator(
+                  color: Colors.black,
+                )
+                            ],
+                          ),
+              ));
+        }
+      },
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }
