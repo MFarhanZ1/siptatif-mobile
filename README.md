@@ -3,7 +3,7 @@
 - https://github.com/deaaprizal/cuymodoro -->
 
 <div align="center" style="margin-bottom: 59px;">
-    <b>Neo-SIPTATIF</b> was a mobile version of <a href="https://github.com/MFarhanZ1/siptatif"><b>SIPTATIF Web Based,</b></a> especially for Koordinator TA roles
+    <b>Neo-SIPTATIF</b> was a mobile version of <a href="https://github.com/MFarhanZ1/siptatif"><b>SIPTATIF Web Based,</b></a> especially for Koordinator TA roles!
     </br>
     Cek source code <b>versi web-nya lengkap beserta backend + database</b> direpo pada link dibawah ini! 
     </br>
@@ -78,6 +78,9 @@ Aplikasi ini dirancang untuk memudahkan koordinator tugas akhir serta mahasiswa 
 - Semisal koordinator ta menyetujui pengajuan TA mahasiswa, koordinator TA pun berhak menetapkan siapa penguji 1 dan penguji 2 bagi mahasiswa tersebut, lalu bisa di revisi nantinya jika penguji terkait berhalangan
 
 ## 👣 Skenario Penggunaan
+
+Sebelumnya disini saya menggunakan metode API security dengan JWT Access Token, serta JWT Refresh Token, dimana, saat user login, backend akan mengembalikan JSON accessToken + refreshToken yang pada aplikasi mobile kami ini disimpan di SecureStorage keduanya sebagai pengganti LocalStorage dan Cookies yang tak tersedia di mobile. Nah, kami juga menggunakan DIO Api Client agar mempermudah kami memasang interceptor dalam upaya melakukan percobaan pembuatan access token baru ketika ada request gagal dengan refresh token yang telah tersimpan di secure storage juga sebelumnya.
+
 **Berikut skenario sederhana jika kita login sebagai aktor koordinator TA:**
 - Role Admin Prodi yang terdapat di [SIPTATIF Web Based](https://github.com/mfarhanz1/siptatif) akan melakukan pemberian jabatan atau wewenang terhadap suatu dosen.
 - Lalu, backend akan otomatis menjalankan procedure yang telah dibuat di-database, yang mana output akhirnya akan membuatkan akun dengan email beserta nidn sebagai password defaultnya
