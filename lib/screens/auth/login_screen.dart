@@ -159,12 +159,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   }).then((value) {
                     // close loading screen and append snackbar based on result
                     Navigator.pop(context);
-                    if (value.data['response'] && value.data['role'] == "Koordinator TA") {
-
+                    if (value.data['response'] &&
+                        value.data['role'] == "Koordinator TA") {
                       // store acces-token and refresh-token at flutter secure storage
-                      _secureStorage.writeSecureData("accessToken", "${value.data['access_token']}");
-                      _secureStorage.writeSecureData("refreshToken", "${value.data['refresh_token']}");
-                      
+                      _secureStorage.writeSecureData(
+                          "accessToken", "${value.data['access_token']}");
+                      _secureStorage.writeSecureData(
+                          "refreshToken", "${value.data['refresh_token']}");
+
                       snackBar = SnackBar(
                         /// need to set following properties for best effect of awesome_snackbar_content
                         elevation: 0,
@@ -186,7 +188,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         backgroundColor: Colors.transparent,
                         content: AwesomeSnackbarContent(
                           title: 'Yah, Login Gagal!',
-                          message: "Maaf, Email/Password yang anda masukkan salah!",
+                          message:
+                              "Maaf, Email/Password yang anda masukkan salah!",
 
                           /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
                           contentType: ContentType.failure,
@@ -198,8 +201,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ScaffoldMessenger.of(context)
                       ..hideCurrentSnackBar()
                       ..showSnackBar(snackBar);
-
-                    if (value.data['response'] && value.data['role'] == "Koordinator TA") {
+                    if (value.data['response'] &&
+                        value.data['role'] == "Koordinator TA") {
                       Navigator.pushReplacementNamed(context, "/dashboard");
                     }
                   });
