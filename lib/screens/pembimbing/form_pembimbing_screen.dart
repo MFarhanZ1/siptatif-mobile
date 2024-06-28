@@ -331,7 +331,7 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
                                       behavior: SnackBarBehavior.floating,
                                       backgroundColor: Colors.transparent,
                                       content: AwesomeSnackbarContent(
-                                        title: 'Data Berhasil diupdate!',
+                                        title: 'Berhasil diupdate!',
                                         message: "${value.data['message']}",
 
                                         /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
@@ -379,7 +379,7 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
                                       behavior: SnackBarBehavior.floating,
                                       backgroundColor: Colors.transparent,
                                       content: AwesomeSnackbarContent(
-                                        title: 'Data Berhasil dikirim!',
+                                        title: 'Berhasil dikirim!',
                                         message: "${value.data['message']}",
 
                                         /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
