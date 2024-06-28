@@ -1,6 +1,7 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:siptatif_mobile/components/loading_dialog_component.dart';
 import 'package:siptatif_mobile/services/dosen_service.dart';
 import 'package:siptatif_mobile/services/penguji_service.dart';
 
@@ -13,11 +14,16 @@ class FormPengujiScreen extends StatefulWidget {
 
 class _FormPengujiScreenState extends State<FormPengujiScreen> {
   final TextEditingController _kuotaController = TextEditingController();
+  final TextEditingController _kuotaControllerUpdate = TextEditingController();
 
   final DosenService _dosenService = DosenService();
   final PengujiService _pengujiService = PengujiService();
   List<dynamic> _dosen = [];
   dynamic _selected;
+
+  dynamic _penguji;
+
+  late bool _editMode = false;
 
   Future<void> _resourceDosen() async {
     await _dosenService.getAllDosen().then((value) {
@@ -35,6 +41,15 @@ class _FormPengujiScreenState extends State<FormPengujiScreen> {
     // TODO: implement initState
     super.initState();
     _resourceDosen();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      setState(() {
+        _penguji = args['penguji'];
+        _editMode = args['editMode'];
+        _kuotaControllerUpdate.text = _penguji['kuota_awal'].toString();
+      });
+    });
   }
 
   @override
@@ -47,10 +62,10 @@ class _FormPengujiScreenState extends State<FormPengujiScreen> {
             Navigator.pop(context);
           },
         ),
-        flexibleSpace: const FlexibleSpaceBar(
+        flexibleSpace: FlexibleSpaceBar(
           titlePadding: EdgeInsets.only(left: 52.0, bottom: 17.0),
           title: Text(
-            'Dosen Penguji',
+            _editMode ? 'Edit Dosen Penguji' : 'Dosen Penguji',
             style: TextStyle(
               fontSize: 18, // Sesuaikan ukuran font sesuai kebutuhan
             ),
@@ -72,31 +87,44 @@ class _FormPengujiScreenState extends State<FormPengujiScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Pilih Dosen Penguji',
+                  Text(
+                    _editMode ? 'Dosen penguji' : 'Pilih Dosen Penguji',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 17,
                       letterSpacing: -0.5,
                     ),
                   ),
-                  DropdownButton<dynamic>(
-                    value: _selected,
-                    isExpanded: true,
-                    items: _dosen.map(
-                      (value) {
-                        return DropdownMenuItem<dynamic>(
-                          child: Text(value['nama']),
-                          value: value,
-                        );
-                      },
-                    ).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selected = value;
-                      });
-                    },
-                  ),
+                  _editMode
+                      ? TextField(
+                          decoration: InputDecoration(
+                            enabled:
+                                false, // Membuat TextField tidak dapat diedit
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          enabled: false,
+                          controller:
+                              TextEditingController(text: _penguji['nama']),
+                        )
+                      : DropdownButton<dynamic>(
+                          value: _selected,
+                          isExpanded: true,
+                          items: _dosen.map(
+                            (value) {
+                              return DropdownMenuItem<dynamic>(
+                                child: Text(value['nama']),
+                                value: value,
+                              );
+                            },
+                          ).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selected = value;
+                            });
+                          },
+                        ),
                   const SizedBox(height: 10),
                   const Text(
                     'NIDN Penguji',
@@ -106,17 +134,31 @@ class _FormPengujiScreenState extends State<FormPengujiScreen> {
                       letterSpacing: -0.5,
                     ),
                   ),
-                  TextField(
-                    controller: TextEditingController(
-                        text: _selected?['nidn'] ??
-                            '-'), // Menggunakan TextEditingController untuk mengisi NIDN
-                    decoration: InputDecoration(
-                      enabled: false, // Membuat TextField tidak dapat diedit
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
+                  _editMode
+                      ? TextField(
+                          controller: TextEditingController(
+                              text: _penguji['nidn'] ??
+                                  '-'), // Menggunakan TextEditingController untuk mengisi NIDN
+                          decoration: InputDecoration(
+                            enabled:
+                                false, // Membuat TextField tidak dapat diedit
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        )
+                      : TextField(
+                          controller: TextEditingController(
+                              text: _selected?['nidn'] ??
+                                  '-'), // Menggunakan TextEditingController untuk mengisi NIDN
+                          decoration: InputDecoration(
+                            enabled:
+                                false, // Membuat TextField tidak dapat diedit
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
                   const SizedBox(height: 10),
                   const Text(
                     'Kuota Penguji',
@@ -126,15 +168,49 @@ class _FormPengujiScreenState extends State<FormPengujiScreen> {
                       letterSpacing: -0.5,
                     ),
                   ),
-                  TextField(
-                    controller: _kuotaController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                  ),
+                  _editMode
+                      ? TextField(
+                          controller: _kuotaControllerUpdate,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onChanged: (value) {
+                            _kuotaControllerUpdate.text = value;
+                          },
+                        )
+                      : TextField(
+                          controller: _kuotaController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            suffixIcon: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.remove),
+                                  onPressed: () {
+                                    _kuotaController.text =
+                                        (int.parse(_kuotaController.text) - 1)
+                                            .toString();
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.add),
+                                  onPressed: () {
+                                    _kuotaController.text =
+                                        (int.parse(_kuotaController.text) + 1)
+                                            .toString();
+                                  },
+                                ),
+                              ],
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
                   const SizedBox(height: 20),
                   Row(
                     children: [
@@ -143,56 +219,108 @@ class _FormPengujiScreenState extends State<FormPengujiScreen> {
                         onPressed: () {
                           Navigator.pop(context);
                         },
-                        child: const Text('Kembali'),
+                        child: const Text('Batal'),
                       ),
                       const SizedBox(width: 10),
-                      ElevatedButton(
-                        onPressed: () {
-                          _pengujiService.createPenguji({
-                            "nidn": _selected?['nidn'],
-                            "kuota": _kuotaController.text,
-                          }).then((value) {
-                            if (value.data['response']) {
-                              var snackBar = SnackBar(
-                                /// need to set following properties for best effect of awesome_snackbar_content
-                                elevation: 0,
-                                behavior: SnackBarBehavior.floating,
-                                backgroundColor: Colors.transparent,
-                                content: AwesomeSnackbarContent(
-                                  title: 'Yeay, Data Berhasil dikirim!',
-                                  message: "${value.data['message']}",
+                      _editMode
+                          ? ElevatedButton(
+                              onPressed: () {
+                                showLoaderDialog(context);
+                                _pengujiService.updatePenguji({
+                                  "kuota": _kuotaControllerUpdate.text,
+                                }, _penguji['nidn']).then((value) {
+                                  Navigator.pop(context);
+                                  if (value.data['response']) {
+                                    var snackBar = SnackBar(
+                                      /// need to set following properties for best effect of awesome_snackbar_content
+                                      elevation: 0,
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: Colors.transparent,
+                                      content: AwesomeSnackbarContent(
+                                        title: 'Data Berhasil diupdate!',
+                                        message: "${value.data['message']}",
 
-                                  /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
-                                  contentType: ContentType.success,
-                                ),
-                              );
-                              ScaffoldMessenger.of(context)
-                                ..hideCurrentSnackBar()
-                                ..showSnackBar(snackBar);
-                              Navigator.pop(context);
-                            } else {
-                              var snackBar = SnackBar(
-                                /// need to set following properties for best effect of awesome_snackbar_content
-                                elevation: 0,
-                                behavior: SnackBarBehavior.floating,
-                                backgroundColor: Colors.transparent,
-                                content: AwesomeSnackbarContent(
-                                  title: 'Aduh.., Kamu ngapain ?',
-                                  message: "${value.data['message']}",
+                                        /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+                                        contentType: ContentType.success,
+                                      ),
+                                    );
+                                    ScaffoldMessenger.of(context)
+                                      ..hideCurrentSnackBar()
+                                      ..showSnackBar(snackBar);
+                                    Navigator.pop(context);
+                                  } else {
+                                    var snackBar = SnackBar(
+                                      /// need to set following properties for best effect of awesome_snackbar_content
+                                      elevation: 0,
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: Colors.transparent,
+                                      content: AwesomeSnackbarContent(
+                                        title: 'Gagal Mengupdate!',
+                                        message: "${value.data['message']}",
 
-                                  /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
-                                  contentType: ContentType.failure,
-                                ),
-                              );
-                              ScaffoldMessenger.of(context)
-                                ..hideCurrentSnackBar()
-                                ..showSnackBar(snackBar);
-                              Navigator.pop(context);
-                            }
-                          });
-                        },
-                        child: const Text('Kirim'),
-                      ),
+                                        /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+                                        contentType: ContentType.failure,
+                                      ),
+                                    );
+                                    ScaffoldMessenger.of(context)
+                                      ..hideCurrentSnackBar()
+                                      ..showSnackBar(snackBar);
+                                    Navigator.pop(context);
+                                  }
+                                });
+                              },
+                              child: Text("Update"))
+                          : ElevatedButton(
+                              onPressed: () async {
+                                showLoaderDialog(context);
+                                await Future.delayed(
+                                    const Duration(seconds: 1));
+                                _pengujiService.createPenguji({
+                                  "nidn": _selected?['nidn'],
+                                  "kuota": _kuotaController.text,
+                                }).then((value) {
+                                  Navigator.pop(context);
+                                  if (value.data['response']) {
+                                    var snackBar = SnackBar(
+                                      /// need to set following properties for best effect of awesome_snackbar_content
+                                      elevation: 0,
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: Colors.transparent,
+                                      content: AwesomeSnackbarContent(
+                                        title: 'Berhasil dikirim!',
+                                        message: "${value.data['message']}",
+
+                                        /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+                                        contentType: ContentType.success,
+                                      ),
+                                    );
+                                    ScaffoldMessenger.of(context)
+                                      ..hideCurrentSnackBar()
+                                      ..showSnackBar(snackBar);
+                                    Navigator.pop(context);
+                                  } else {
+                                    var snackBar = SnackBar(
+                                      /// need to set following properties for best effect of awesome_snackbar_content
+                                      elevation: 0,
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: Colors.transparent,
+                                      content: AwesomeSnackbarContent(
+                                        title: 'Gagal dikirim!',
+                                        message: "${value.data['message']}",
+
+                                        /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+                                        contentType: ContentType.failure,
+                                      ),
+                                    );
+                                    ScaffoldMessenger.of(context)
+                                      ..hideCurrentSnackBar()
+                                      ..showSnackBar(snackBar);
+                                    Navigator.pop(context);
+                                  }
+                                });
+                              },
+                              child: const Text('Kirim'),
+                            ),
                     ],
                   )
                 ],

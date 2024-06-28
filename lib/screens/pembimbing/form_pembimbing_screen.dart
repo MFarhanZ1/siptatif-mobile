@@ -1,6 +1,7 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:siptatif_mobile/components/loading_dialog_component.dart';
 import 'package:siptatif_mobile/services/dosen_service.dart';
 import 'package:siptatif_mobile/services/pembimbing_service.dart';
 
@@ -17,9 +18,10 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
   List<dynamic> _dosen = [];
   dynamic _selected;
   late dynamic _pembimbing;
-  late bool _editMode;
+  late bool _editMode = false;
 
   final TextEditingController _kuotaController = TextEditingController();
+  final TextEditingController _kuotaControllerUpdate = TextEditingController();
 
   // Menghapus 'late' untuk menghindari LateInitializationError
 
@@ -33,6 +35,7 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
       setState(() {
         _pembimbing = args['pembimbing'];
         _editMode = args['editMode'];
+        _kuotaControllerUpdate.text = _pembimbing['kuota_awal'].toString();
       });
     });
   }
@@ -166,26 +169,44 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
                   ),
                   _editMode
                       ? TextField(
-
-                          controller: TextEditingController(
-                              text: _pembimbing['kuota_awal']
-                                  .toString() // Menggunakan TextEditingController untuk mengisi NIDN
-                              ),
+                          controller: _kuotaControllerUpdate,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
+                          onChanged: (value) {
+                            _kuotaControllerUpdate.text = value;
+                          },
                         )
                       : TextField(
                           controller: _kuotaController,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
+                            suffixIcon: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.remove),
+                                  onPressed: () {
+                                    _kuotaController.text = (int.parse(_kuotaController.text) - 1).toString();
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.add),
+                                  onPressed: () {
+                                    _kuotaController.text = (int.parse(_kuotaController.text) + 1).toString();
+                                  },
+                                ),
+                              ],
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
+                          
+
                         ),
                   const SizedBox(height: 20),
                   Row(
@@ -195,23 +216,17 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
                         onPressed: () {
                           Navigator.pop(context);
                         },
-                        child: const Text('Kembali'),
+                        child: const Text('Batal'),
                       ),
                       const SizedBox(width: 10),
                       _editMode
                           ? ElevatedButton(
                               onPressed: () {
+                                showLoaderDialog(context);
                                 _pembimbingService.updatePembimbing({
-                                  "kuota": _kuotaController.text,
-                                }, _pembimbing['nidn']).then((value) {});
-                              },
-                              child: Text("Update"))
-                          : ElevatedButton(
-                              onPressed: () {
-                                _pembimbingService.createPembimbing({
-                                  "nidn": _selected?['nidn'],
-                                  "kuota": _kuotaController.text,
-                                }).then((value) {
+                                  "kuota": _kuotaControllerUpdate.text,
+                                }, _pembimbing['nidn']).then((value) {
+                                  Navigator.pop(context);
                                   if (value.data['response']) {
                                     var snackBar = SnackBar(
                                       /// need to set following properties for best effect of awesome_snackbar_content
@@ -219,7 +234,7 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
                                       behavior: SnackBarBehavior.floating,
                                       backgroundColor: Colors.transparent,
                                       content: AwesomeSnackbarContent(
-                                        title: 'Yeay, Data Berhasil dikirim!',
+                                        title: 'Data Berhasil diupdate!',
                                         message: "${value.data['message']}",
 
                                         /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
@@ -237,7 +252,55 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
                                       behavior: SnackBarBehavior.floating,
                                       backgroundColor: Colors.transparent,
                                       content: AwesomeSnackbarContent(
-                                        title: 'Aduh.., Kamu ngapain ?',
+                                        title: 'Gagal Mengupdate!',
+                                        message: "${value.data['message']}",
+
+                                        /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+                                        contentType: ContentType.failure,
+                                      ),
+                                    );
+                                    ScaffoldMessenger.of(context)
+                                      ..hideCurrentSnackBar()
+                                      ..showSnackBar(snackBar);
+                                    Navigator.pop(context);
+                                  }
+                                });
+                              },
+                              child: Text("Update"))
+                          : ElevatedButton(
+                              onPressed: () {
+                                showLoaderDialog(context);
+                                _pembimbingService.createPembimbing({
+                                  "nidn": _selected?['nidn'],
+                                  "kuota": _kuotaController.text,
+                                }).then((value) {
+                                  Navigator.pop(context);
+                                  if (value.data['response']) {
+                                    var snackBar = SnackBar(
+                                      /// need to set following properties for best effect of awesome_snackbar_content
+                                      elevation: 0,
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: Colors.transparent,
+                                      content: AwesomeSnackbarContent(
+                                        title: 'Data Berhasil dikirim!',
+                                        message: "${value.data['message']}",
+
+                                        /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
+                                        contentType: ContentType.success,
+                                      ),
+                                    );
+                                    ScaffoldMessenger.of(context)
+                                      ..hideCurrentSnackBar()
+                                      ..showSnackBar(snackBar);
+                                    Navigator.pop(context);
+                                  } else {
+                                    var snackBar = SnackBar(
+                                      /// need to set following properties for best effect of awesome_snackbar_content
+                                      elevation: 0,
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: Colors.transparent,
+                                      content: AwesomeSnackbarContent(
+                                        title: 'Gagal Mengirim !',
                                         message: "${value.data['message']}",
 
                                         /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
