@@ -38,6 +38,7 @@ class _FormPengujiScreenState extends State<FormPengujiScreen> {
 
   @override
   void initState() {
+    _kuotaController.text = "0";
     // TODO: implement initState
     super.initState();
     _resourceDosen();
@@ -47,7 +48,8 @@ class _FormPengujiScreenState extends State<FormPengujiScreen> {
       setState(() {
         _penguji = args['penguji'];
         _editMode = args['editMode'];
-        _kuotaControllerUpdate.text = _penguji['kuota_awal'].toString();
+        _kuotaControllerUpdate.text =
+            args['penguji'] == null ? "0" : _penguji['kuota_awal'].toString();
       });
     });
   }
@@ -65,7 +67,7 @@ class _FormPengujiScreenState extends State<FormPengujiScreen> {
         flexibleSpace: FlexibleSpaceBar(
           titlePadding: EdgeInsets.only(left: 52.0, bottom: 17.0),
           title: Text(
-            _editMode ? 'Edit Dosen Penguji' : 'Dosen Penguji',
+            _editMode ? 'Edit Kuota Penguji' : 'Tambah Dosen Penguji',
             style: TextStyle(
               fontSize: 18, // Sesuaikan ukuran font sesuai kebutuhan
             ),
@@ -169,47 +171,139 @@ class _FormPengujiScreenState extends State<FormPengujiScreen> {
                     ),
                   ),
                   _editMode
-                      ? TextField(
-                          controller: _kuotaControllerUpdate,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
+                      ? Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _kuotaControllerUpdate,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                onChanged: (value) {
+                                  _kuotaControllerUpdate.text = value;
+                                },
+                              ),
                             ),
-                          ),
-                          onChanged: (value) {
-                            _kuotaControllerUpdate.text = value;
-                          },
+                            const SizedBox(width: 10),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.red[100],
+                                border: Border.all(
+                                  color: Colors.black, // Border color
+                                  width: 2.0, // Border width
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                    10), // Optional: to make rounded corners
+                              ),
+                              width: 60,
+                              child: IconButton(
+                                color: Colors.red,
+                                icon: const Icon(Icons.remove),
+                                onPressed: () {
+                                  if (_kuotaControllerUpdate.text == "0") {
+                                    return;
+                                  }
+                                  _kuotaControllerUpdate.text =
+                                      (int.parse(_kuotaControllerUpdate.text) -
+                                              1)
+                                          .toString();
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 7),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.green[100],
+                                border: Border.all(
+                                  color: Colors.black, // Border color
+                                  width: 2.0, // Border width
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                    10), // Optional: to make rounded corners
+                              ),
+                              width: 60,
+                              child: IconButton(
+                                color: Colors.green,
+                                icon: const Icon(Icons.add),
+                                onPressed: () {
+                                  if (_kuotaControllerUpdate.text == '0') {
+                                    return;
+                                  }
+
+                                  _kuotaControllerUpdate.text =
+                                      (int.parse(_kuotaControllerUpdate.text) +
+                                              1)
+                                          .toString();
+                                },
+                              ),
+                            ),
+                          ],
                         )
-                      : TextField(
-                          controller: _kuotaController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            suffixIcon: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.remove),
-                                  onPressed: () {
-                                    _kuotaController.text =
-                                        (int.parse(_kuotaController.text) - 1)
-                                            .toString();
-                                  },
+                      : Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _kuotaController,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.add),
-                                  onPressed: () {
-                                    _kuotaController.text =
-                                        (int.parse(_kuotaController.text) + 1)
-                                            .toString();
-                                  },
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.red[100],
+                                border: Border.all(
+                                  color: Colors.black, // Border color
+                                  width: 2.0, // Border width
                                 ),
-                              ],
+                                borderRadius: BorderRadius.circular(
+                                    10), // Optional: to make rounded corners
+                              ),
+                              width: 60,
+                              child: IconButton(
+                                color: Colors.red,
+                                icon: const Icon(Icons.remove),
+                                onPressed: () {
+                                  if (_kuotaController.text == '0') {
+                                    return;
+                                  }
+
+                                  _kuotaController.text =
+                                      (int.parse(_kuotaController.text) - 1)
+                                          .toString();
+                                },
+                              ),
                             ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
+                            const SizedBox(width: 7),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.green[100],
+                                border: Border.all(
+                                  color: Colors.black, // Border color
+                                  width: 2.0, // Border width
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                    10), // Optional: to make rounded corners
+                              ),
+                              width: 60,
+                              child: IconButton(
+                                color: Colors.green,
+                                icon: const Icon(Icons.add),
+                                onPressed: () {
+                                  _kuotaController.text =
+                                      (int.parse(_kuotaController.text) + 1)
+                                          .toString();
+                                },
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                   const SizedBox(height: 20),
                   Row(
@@ -229,7 +323,6 @@ class _FormPengujiScreenState extends State<FormPengujiScreen> {
                                 _pengujiService.updatePenguji({
                                   "kuota": _kuotaControllerUpdate.text,
                                 }, _penguji['nidn']).then((value) {
-                                  Navigator.pop(context);
                                   if (value.data['response']) {
                                     var snackBar = SnackBar(
                                       /// need to set following properties for best effect of awesome_snackbar_content
@@ -247,6 +340,7 @@ class _FormPengujiScreenState extends State<FormPengujiScreen> {
                                     ScaffoldMessenger.of(context)
                                       ..hideCurrentSnackBar()
                                       ..showSnackBar(snackBar);
+                                    Navigator.pop(context);
                                     Navigator.pop(context);
                                   } else {
                                     var snackBar = SnackBar(
@@ -279,7 +373,6 @@ class _FormPengujiScreenState extends State<FormPengujiScreen> {
                                   "nidn": _selected?['nidn'],
                                   "kuota": _kuotaController.text,
                                 }).then((value) {
-                                  Navigator.pop(context);
                                   if (value.data['response']) {
                                     var snackBar = SnackBar(
                                       /// need to set following properties for best effect of awesome_snackbar_content
@@ -297,6 +390,7 @@ class _FormPengujiScreenState extends State<FormPengujiScreen> {
                                     ScaffoldMessenger.of(context)
                                       ..hideCurrentSnackBar()
                                       ..showSnackBar(snackBar);
+                                    Navigator.pop(context);
                                     Navigator.pop(context);
                                   } else {
                                     var snackBar = SnackBar(

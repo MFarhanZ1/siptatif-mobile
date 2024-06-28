@@ -2,6 +2,7 @@ import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:siptatif_mobile/components/loading_dialog_component.dart';
 import 'package:siptatif_mobile/services/dosen_service.dart';
 import 'package:siptatif_mobile/services/penguji_service.dart';
 
@@ -18,12 +19,20 @@ class _MainPengujiScreenState extends State<MainPengujiScreen> {
 
   List<dynamic> _pengujiList = [];
   dynamic _selectedDosenCallback;
-  bool _isLoading = true;
+  bool _isLoading = false;
   bool _editMode = true;
 
-  Future<void> _searchDataPenguji({searchs = ''}) async {
-    _pengujiService.searchDataPenguji(search: searchs).then((value) {
-      setState(() {});
+  final TextEditingController _searchController = TextEditingController();
+  Future<void> _searchDataPenguji() async {
+    setState(() {
+      _isLoading = true;
+    });
+    _pengujiService
+        .searchDataPenguji(search: _searchController.text)
+        .then((value) {
+      setState(() {
+        _isLoading = false;
+      });
       if (value.data['response']) {
         setState(() {
           _pengujiList = value.data['results'];
@@ -38,6 +47,9 @@ class _MainPengujiScreenState extends State<MainPengujiScreen> {
 
   Future<void> _getAllPenguji() async {
     try {
+      setState(() {
+        _isLoading = true; // Set _isLoading ke true sebelum data dimuat
+      });
       await _pengujiService.getAllPenguji().then((value) {
         setState(() {
           _pengujiList = value.data['results'] ?? [];
@@ -75,6 +87,8 @@ class _MainPengujiScreenState extends State<MainPengujiScreen> {
     setState(() {
       _selectedDosenCallback = item;
     });
+    showLoaderDialog(context);
+
     _pengujiService.deletePenguji(_selectedDosenCallback['nidn']).then((value) {
       if (value.data['response']) {
         _searchDataPenguji();
@@ -112,7 +126,9 @@ class _MainPengujiScreenState extends State<MainPengujiScreen> {
           ..hideCurrentSnackBar()
           ..showSnackBar(snackBar);
       }
-    });
+    }).then((value) => {
+          Navigator.pop(context),
+        });
   }
 
   @override
@@ -130,8 +146,9 @@ class _MainPengujiScreenState extends State<MainPengujiScreen> {
           padding: const EdgeInsets.all(13.0),
           child: Column(children: [
             TextField(
+              controller: _searchController,
               onChanged: (value) {
-                _searchDataPenguji(searchs: value);
+                _searchDataPenguji();
               },
               decoration: InputDecoration(
                   floatingLabelStyle:
@@ -162,7 +179,7 @@ class _MainPengujiScreenState extends State<MainPengujiScreen> {
                         ? _notFound()
                         : ListPenguji(_pengujiList, _onUpdateButtonPressed,
                             _onDeleteButtonPressed)),
-                onRefresh: _getAllPenguji,
+                onRefresh: _searchDataPenguji,
               ),
               // Tampilkan data jika sudah selesai memuat
             ),
@@ -183,6 +200,58 @@ class _MainPengujiScreenState extends State<MainPengujiScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
+
+  Widget _notFound() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Icon(
+          Icons.search_off_rounded,
+          size: 80,
+        ),
+        const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Text(
+            "Waduh mas, datanya kagak ada nih, belom ada list penguji nya mas...",
+            textAlign: TextAlign.center,
+          ),
+        ),
+        SizedBox(
+          height: 3,
+        ),
+        ElevatedButton(
+            onPressed: () => {_searchDataPenguji()},
+            style: ButtonStyle(
+              padding:
+                  WidgetStateProperty.all(EdgeInsets.symmetric(horizontal: 12)),
+              shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              )),
+              backgroundColor:
+                  WidgetStateProperty.all(Color.fromARGB(255, 251, 224, 255)),
+              elevation: WidgetStateProperty.all(0.0),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.refresh,
+                  color: Colors.black,
+                ),
+                SizedBox(
+                  width: 4,
+                ),
+                Text(
+                  'Tap to Refresh',
+                  style: TextStyle(color: Colors.black),
+                ),
+              ],
+            ))
+      ],
+    );
+  }
 }
 
 Widget ListPenguji(
@@ -196,7 +265,7 @@ Widget ListPenguji(
       var penguji = pengujiList[index];
       var ndin = penguji['nidn'] ?? '-';
       var nama = penguji['nama'] ?? '-';
-      var kuota_tersisa = penguji['kuota_tersisa'] ?? 0;
+      var kuota_awal = penguji['kuota_awal'] ?? 0;
       var kuota_terpakai = penguji['kuota_terpakai'] ?? 0;
       var keahlian = penguji['keahlian'] ?? 'Keahlian Belum Diisi';
 
@@ -209,7 +278,7 @@ Widget ListPenguji(
             children: [
               SlidableAction(
                 padding: EdgeInsets.zero,
-                label: 'edit',
+                label: 'Edit',
                 onPressed: (c) => onEditButtonPressed(penguji),
                 icon: Icons.edit,
                 backgroundColor: Colors.blueAccent,
@@ -367,7 +436,7 @@ Widget ListPenguji(
                               color: Colors.amber[200],
                             ),
                             child: Text(
-                              kuota_tersisa.toString() + " Kuota Tersedia",
+                              kuota_awal.toString() + " Kuota Tersedia",
                               style: TextStyle(
                                 fontFamily: "Montserrat-SemiBold",
                                 letterSpacing: -0.5,
@@ -401,27 +470,5 @@ Widget ListPenguji(
         ),
       );
     },
-  );
-}
-
-Widget _notFound() {
-  return const Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Icon(
-          Icons.search_off_rounded,
-          size: 80,
-        ),
-        Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text(
-            "Waduh mas, datanya kagak ada nih, coba cari pake keyword lain yak bro...",
-            textAlign: TextAlign.center,
-          ),
-        )
-      ],
-    ),
   );
 }

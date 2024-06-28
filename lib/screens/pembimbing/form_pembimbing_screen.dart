@@ -27,6 +27,7 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
 
   @override
   void initState() {
+    _kuotaController.text = "0";
     super.initState();
     _resourceDosen();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -35,7 +36,9 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
       setState(() {
         _pembimbing = args['pembimbing'];
         _editMode = args['editMode'];
-        _kuotaControllerUpdate.text = _pembimbing['kuota_awal'].toString();
+        _kuotaControllerUpdate.text = args['pembimbing'] == null
+            ? "0"
+            : _pembimbing['kuota_awal'].toString();
       });
     });
   }
@@ -64,7 +67,7 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
         flexibleSpace: FlexibleSpaceBar(
           titlePadding: EdgeInsets.only(left: 52.0, bottom: 17.0),
           title: Text(
-            _editMode ? 'Edit Dosen Pembimbing' : 'Dosen Pembimbing',
+            _editMode ? 'Edit Kuota Pembimbing' : 'Tambah Dosen Pembimbing',
             style: TextStyle(
               fontSize: 18, // Sesuaikan ukuran font sesuai kebutuhan
             ),
@@ -168,45 +171,140 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
                     ),
                   ),
                   _editMode
-                      ? TextField(
-                          controller: _kuotaControllerUpdate,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onChanged: (value) {
-                            _kuotaControllerUpdate.text = value;
-                          },
-                        )
-                      : TextField(
-                          controller: _kuotaController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            suffixIcon: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.remove),
-                                  onPressed: () {
-                                    _kuotaController.text = (int.parse(_kuotaController.text) - 1).toString();
-                                  },
+                      ? Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _kuotaControllerUpdate,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.add),
-                                  onPressed: () {
-                                    _kuotaController.text = (int.parse(_kuotaController.text) + 1).toString();
-                                  },
+                                onChanged: (value) {
+                                  
+                                  _kuotaControllerUpdate.text = value;
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.red[100],
+                                border: Border.all(
+                                  color: Colors.black, // Border color
+                                  width: 2.0, // Border width
                                 ),
-                              ],
+                                borderRadius: BorderRadius.circular(
+                                    10), // Optional: to make rounded corners
+                              ),
+                              width: 60,
+                              child: IconButton(
+                                color: Colors.red,
+                                icon: const Icon(Icons.remove),
+                                onPressed: () {
+                                  if (_kuotaControllerUpdate.text == "0") {
+                                    return;
+                                  }
+                                  _kuotaControllerUpdate.text =
+                                      (int.parse(_kuotaControllerUpdate.text) -
+                                              1)
+                                          .toString();
+                                },
+                              ),
                             ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          
+                            const SizedBox(width: 7),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.green[100],
+                                border: Border.all(
+                                  color: Colors.black, // Border color
+                                  width: 2.0, // Border width
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                    10), // Optional: to make rounded corners
+                              ),
+                              width: 60,
+                              child: IconButton(
+                                color: Colors.green,
+                                icon: const Icon(Icons.add),
+                                onPressed: () {
+                                  if (_kuotaControllerUpdate.text == '0') {
+                                    return;
+                                  }
 
+                                  _kuotaControllerUpdate.text =
+                                      (int.parse(_kuotaControllerUpdate.text) +
+                                              1)
+                                          .toString();
+                                },
+                              ),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _kuotaController,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.red[100],
+                                border: Border.all(
+                                  color: Colors.black, // Border color
+                                  width: 2.0, // Border width
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                    10), // Optional: to make rounded corners
+                              ),
+                              width: 60,
+                              child: IconButton(
+                                color: Colors.red,
+                                icon: const Icon(Icons.remove),
+                                onPressed: () {
+                                  if (_kuotaController.text == '0') {
+                                    return;
+                                  }
+
+                                  _kuotaController.text =
+                                      (int.parse(_kuotaController.text) - 1)
+                                          .toString();
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 7),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.green[100],
+                                border: Border.all(
+                                  color: Colors.black, // Border color
+                                  width: 2.0, // Border width
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                    10), // Optional: to make rounded corners
+                              ),
+                              width: 60,
+                              child: IconButton(
+                                color: Colors.green,
+                                icon: const Icon(Icons.add),
+                                onPressed: () {
+                                  _kuotaController.text =
+                                      (int.parse(_kuotaController.text) + 1)
+                                          .toString();
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                   const SizedBox(height: 20),
                   Row(
@@ -226,7 +324,6 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
                                 _pembimbingService.updatePembimbing({
                                   "kuota": _kuotaControllerUpdate.text,
                                 }, _pembimbing['nidn']).then((value) {
-                                  Navigator.pop(context);
                                   if (value.data['response']) {
                                     var snackBar = SnackBar(
                                       /// need to set following properties for best effect of awesome_snackbar_content
@@ -244,6 +341,7 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
                                     ScaffoldMessenger.of(context)
                                       ..hideCurrentSnackBar()
                                       ..showSnackBar(snackBar);
+                                    Navigator.pop(context);
                                     Navigator.pop(context);
                                   } else {
                                     var snackBar = SnackBar(
@@ -274,7 +372,6 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
                                   "nidn": _selected?['nidn'],
                                   "kuota": _kuotaController.text,
                                 }).then((value) {
-                                  Navigator.pop(context);
                                   if (value.data['response']) {
                                     var snackBar = SnackBar(
                                       /// need to set following properties for best effect of awesome_snackbar_content
@@ -293,6 +390,7 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
                                       ..hideCurrentSnackBar()
                                       ..showSnackBar(snackBar);
                                     Navigator.pop(context);
+                                    Navigator.pop(context);
                                   } else {
                                     var snackBar = SnackBar(
                                       /// need to set following properties for best effect of awesome_snackbar_content
@@ -300,7 +398,7 @@ class _FormPembimbingScreenState extends State<FormPembimbingScreen> {
                                       behavior: SnackBarBehavior.floating,
                                       backgroundColor: Colors.transparent,
                                       content: AwesomeSnackbarContent(
-                                        title: 'Gagal Mengirim !',
+                                        title: 'Waduh, gagal mas!',
                                         message: "${value.data['message']}",
 
                                         /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants

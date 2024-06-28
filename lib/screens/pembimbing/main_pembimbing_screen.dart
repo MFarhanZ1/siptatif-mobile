@@ -21,7 +21,7 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
   List<dynamic> _dosenAllList = [];
   dynamic _selectedDosenCallback;
 
-  bool _isLoading = true;
+  bool _isLoading = false;
   bool _editMode = false;
   // Tambahkan variabel ini
   // bool _buttonUpdate = false; // Tambahkan variabel ini
@@ -40,9 +40,18 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
             });
   }
 
-  Future<void> _searchDataPembimbing({searchs = ''}) async {
-    _pembimbingService.searchDataPembimbing(search: searchs).then((value) {
-      setState(() {});
+  final TextEditingController _searchController = TextEditingController();
+
+  Future<void> _searchDataPembimbing() async {
+    setState(() {
+      _isLoading = true;
+    });
+    _pembimbingService
+        .searchDataPembimbing(search: _searchController.text)
+        .then((value) {
+      setState(() {
+        _isLoading = false;
+      });
       if (value.data['response']) {
         setState(() {
           _pembimbingList = value.data['results'];
@@ -90,7 +99,7 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
           behavior: SnackBarBehavior.floating,
           backgroundColor: Colors.transparent,
           content: AwesomeSnackbarContent(
-            title: 'Gagal !',
+            title: 'Waduh, gagal mas!',
             message: "${value.data['message']}",
 
             /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
@@ -115,6 +124,9 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
 
   Future<void> _getAllPembimbing() async {
     try {
+      setState(() {
+        _isLoading = true; // Set _isLoading ke true sebelum data dimuat
+      });
       await _pembimbingService.getAllPembimbing().then((value) {
         setState(() {
           _pembimbingList = value.data['results'] ?? [];
@@ -138,8 +150,9 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
         padding: const EdgeInsets.all(13.0),
         child: Column(children: [
           TextField(
+            controller: _searchController,
             onChanged: (value) {
-              _searchDataPembimbing(searchs: value);
+              _searchDataPembimbing();
             },
             decoration: InputDecoration(
                 floatingLabelStyle:
@@ -170,7 +183,7 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
                       ? _notFound()
                       : ListPembimbing(_pembimbingList, _onUpdateButtonPressed,
                           _onDeleteButtonPressed)),
-              onRefresh: _getAllPembimbing,
+              onRefresh: _searchDataPembimbing,
             ),
             // Tampilkan data jika sudah selesai memuat
           ),
@@ -191,6 +204,58 @@ class _MainPembimbingScreenState extends State<MainPembimbingScreen> {
         child: Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+
+  Widget _notFound() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Icon(
+          Icons.search_off_rounded,
+          size: 80,
+        ),
+        const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Text(
+            "Waduh mas, datanya kagak ada nih, belom ada list pembimbing nya mas...",
+            textAlign: TextAlign.center,
+          ),
+        ),
+        SizedBox(
+          height: 3,
+        ),
+        ElevatedButton(
+            onPressed: () => {_searchDataPembimbing()},
+            style: ButtonStyle(
+              padding:
+                  WidgetStateProperty.all(EdgeInsets.symmetric(horizontal: 12)),
+              shape: WidgetStateProperty.all(RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              )),
+              backgroundColor:
+                  WidgetStateProperty.all(Color.fromARGB(255, 251, 224, 255)),
+              elevation: WidgetStateProperty.all(0.0),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.refresh,
+                  color: Colors.black,
+                ),
+                SizedBox(
+                  width: 4,
+                ),
+                Text(
+                  'Tap to Refresh',
+                  style: TextStyle(color: Colors.black),
+                ),
+              ],
+            ))
+      ],
     );
   }
 }
@@ -220,7 +285,7 @@ Widget ListPembimbing(
             children: [
               SlidableAction(
                 padding: EdgeInsets.zero,
-                label: 'edit',
+                label: 'Edit',
                 onPressed: (c) => onEditButtonPressed(pembimbing),
                 icon: Icons.edit,
                 backgroundColor: Colors.blueAccent,
@@ -416,24 +481,3 @@ Widget ListPembimbing(
 }
 
 // not found
-Widget _notFound() {
-  return const Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Icon(
-          Icons.search_off_rounded,
-          size: 80,
-        ),
-        Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text(
-            "Waduh mas, datanya kagak ada nih, coba cari pake keyword lain yak bro...",
-            textAlign: TextAlign.center,
-          ),
-        )
-      ],
-    ),
-  );
-}
