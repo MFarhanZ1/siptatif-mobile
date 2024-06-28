@@ -115,7 +115,7 @@ class _MainPengujiScreenState extends State<MainPengujiScreen> {
           behavior: SnackBarBehavior.floating,
           backgroundColor: Colors.transparent,
           content: AwesomeSnackbarContent(
-            title: 'Gagal !',
+            title: 'Waduh, gagal mas!',
             message: "${value.data['message']}",
 
             /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
