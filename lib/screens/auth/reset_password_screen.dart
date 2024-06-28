@@ -165,7 +165,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                       behavior: SnackBarBehavior.floating,
                                       backgroundColor: Colors.transparent,
                                       content: AwesomeSnackbarContent(
-                                        title: 'Yeay, Sent Link Sukses!',
+                                        title: 'Sent Link Sukses!',
                                         message: "${value.data['message']}",
 
                                         /// change contentType to ContentType.success, ContentType.warning or ContentType.help for variants
