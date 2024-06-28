@@ -5,7 +5,9 @@
 <div align="center" style="margin-bottom: 59px;">
     <b>Neo-SIPTATIF</b> was a mobile version of <a href="https://github.com/MFarhanZ1/siptatif"><b>SIPTATIF Web Based,</b></a> especially for Koordinator TA roles
     </br>
-    Cek source code <b>versi web-nya lengkap beserta backend + database</b> direpo 👉🏻👉🏻 <b>https://github.com/MFarhanZ1/siptatif</b>
+    Cek source code <b>versi web-nya lengkap beserta backend + database</b> direpo pada link dibawah ini! 
+    </br>
+    👉🏻👉🏻 <b>https://github.com/MFarhanZ1/siptatif</b> 👈🏻👈🏻
 </div>
 
 
