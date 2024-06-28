@@ -13,6 +13,24 @@ class FormMahasiswaScreen extends StatefulWidget {
 class _FormMahasiswaScreenState extends State<FormMahasiswaScreen> {
   final _mahasiswaService = MahasiswaService();
 
+  Color? _warnaStatusCard(String status, {int shade = 100}) {
+    if (status == "SETUJU") {
+      return Colors.green[shade];
+    } else if (status == "DITOLAK") {
+      return Colors.red[shade];
+    }
+    return Colors.amber[shade];
+  }
+
+  String _emotTextStatus(String status) {
+    if (status == "SETUJU") {
+      return "😎 ~ Disetujui";
+    } else if (status == "DITOLAK") {
+      return "😭 ~ Ditolak";
+    }
+    return "😣 ~ Menunggu";
+  }
+
   String capitalizeFirstLetterOfEachWord(String input) {
     if (input.isEmpty) return input;
 
@@ -61,8 +79,18 @@ class _FormMahasiswaScreenState extends State<FormMahasiswaScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
         child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Container(
+                color: _warnaStatusCard(mhs['status']),
+                width: MediaQuery.of(context).size.width,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Text(_emotTextStatus(mhs["status"]), style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: 1.5),),
+                  )
+                ),
+              ),
+              const SizedBox(height: 14),
               _mhsData('Nama: ',
                   capitalizeFirstLetterOfEachWord(mhs['nama_mahasiswa'])),
               _mhsData('NIM: ', mhs['nim']),
@@ -75,6 +103,8 @@ class _FormMahasiswaScreenState extends State<FormMahasiswaScreen> {
               _mhsData('Dosen Pembimbing 1: ', mhs['dosen_pembimbing1']),
               _mhsData('Dosen Pembimbing 2: ',
                   mhs['dosen_pembimbing2'] ?? '(Tidak Memilih)'),
+              mhs["status"] == "SETUJU" ? _mhsData('Dosen Penguji 1: ', mhs['dosen_penguji1']) : Container(),
+              mhs["status"] == "SETUJU" ? _mhsData('Dosen Penguji 2: ', mhs['dosen_penguji2']) : Container(),
               const SizedBox(
                 height: 4,
               ),
@@ -117,10 +147,10 @@ class _FormMahasiswaScreenState extends State<FormMahasiswaScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
-              Row(
+              ["MENUNGGU", "SETUJU"].contains(mhs['status']) ? const SizedBox(height: 12) : Container(),
+              ["MENUNGGU", "SETUJU"].contains(mhs['status']) ? Row(
                 children: [
-                  Expanded(
+                  mhs["status"] == "MENUNGGU" ? Expanded(
                     child: SizedBox(
                       height: 47,
                       child: TextButton(
@@ -145,8 +175,8 @@ class _FormMahasiswaScreenState extends State<FormMahasiswaScreen> {
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
+                  ) : Container(),
+                  mhs["status"] == "MENUNGGU" ? const SizedBox(width: 10) : Container(),
                   Expanded(
                     child: SizedBox(
                       height: 47,
@@ -156,25 +186,25 @@ class _FormMahasiswaScreenState extends State<FormMahasiswaScreen> {
                         },
                         style: ButtonStyle(
                           backgroundColor: WidgetStateProperty.all(
-                              const Color.fromARGB(255, 62, 167, 43)),
+                              mhs["status"] == "MENUNGGU" ? const Color.fromARGB(255, 62, 167, 43) : Color.fromARGB(255, 239, 191, 72)),
                           shape: WidgetStateProperty.all(
                               const RoundedRectangleBorder(
                             borderRadius: BorderRadius.all(Radius.circular(10)),
                           )),
                         ),
-                        child: const Text(
-                          'Saya Setuju',
+                        child: Text(
+                          mhs["status"] == "MENUNGGU" ? 'Saya Setuju' : 'Mau ganti penguji deh',
                           style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
                               letterSpacing: -0.3,
-                              color: Colors.white),
+                              color: mhs["status"] == "MENUNGGU" ? Colors.white : Colors.black),
                         ),
                       ),
                     ),
                   ),
                 ],
-              )
+              ) : Container(),
             ],
           ),
         ),
@@ -184,22 +214,40 @@ class _FormMahasiswaScreenState extends State<FormMahasiswaScreen> {
 
   Column _mhsData(String label, String value) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
         Container(
-          color: const Color.fromARGB(255, 252, 255, 192),
-          child: Text(value,
-              style:
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+          color: Color.fromARGB(255, 224, 224, 224),
+          width: MediaQuery.of(context).size.width,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(3.0),
+              child: Text(
+                label,
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
+        Container(        
+          color: Color.fromARGB(255, 255, 255, 249),
+          width: MediaQuery.of(context).size.width,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(7.0),
+              child: Text(value,
+                  style:
+                      const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                  textAlign: TextAlign.center),
+            ),
+          ),
         ),
         const SizedBox(height: 15),
       ],
     );
   }
+
 
   final TextEditingController _catatanController = TextEditingController();
   late SnackBar snackBar;
@@ -363,58 +411,63 @@ class _FormMahasiswaScreenState extends State<FormMahasiswaScreen> {
                 color: Colors.black),
           ),
           content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 15),
-                DropdownButtonFormField<String>(
-                  isExpanded: true,
-                  value: selectedPenguji1,
-                  items: listPenguji
-                      .map((penguji) => DropdownMenuItem<String>(
-                            value: penguji['nidn'],
-                            child: Text(
-                              "[${penguji['kuota_terpakai']}/${penguji['kuota_awal']}] ${penguji['nama']}",
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedPenguji1 = value;
-                    });
-                  },
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: '-- Pilih Penguji 1 --',
-                  ),
-                ),
-                const SizedBox(height: 25),
-                DropdownButtonFormField<String>(
-                  isExpanded: true,
-                  value: selectedPenguji2,
-                  items: listPenguji
-                      .map((penguji) => DropdownMenuItem<String>(
-                            value: penguji['nidn'],
-                            child: Text(
-                              "[${penguji['kuota_terpakai']}/${penguji['kuota_awal']}] ${penguji['nama']}",
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedPenguji2 = value;
-                    });
-                  },
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: '-- Pilih Penguji 2 --',
-                  ),
-                ),
-              ],
+            child: StatefulBuilder(builder: (context, setState) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 15),
+                    DropdownButtonFormField<String>(
+                      isExpanded: true,
+                      value: selectedPenguji1,
+                      items: listPenguji
+                          .map((penguji) => DropdownMenuItem<String>(
+                                value: penguji['nidn'],
+                                child: Text(
+                                  "[${penguji['kuota_terpakai']}/${penguji['kuota_awal']}] ${penguji['nama']}",
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedPenguji1 = value;
+                          selectedPenguji2 = null;
+                        });
+                      },
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: '-- Pilih Penguji 1 --',
+                      ),
+                    ),
+                    const SizedBox(height: 25),
+                    DropdownButtonFormField<String>(
+                      isExpanded: true,
+                      value: selectedPenguji2,
+                      items: listPenguji
+                          .where((penguji) => penguji['nidn']! != selectedPenguji1)
+                          .map((penguji) => DropdownMenuItem<String>(
+                                value: penguji['nidn'],
+                                child: Text(
+                                  "[${penguji['kuota_terpakai']}/${penguji['kuota_awal']}] ${penguji['nama']}",
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedPenguji2 = value;
+                        });
+                      },
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: '-- Pilih Penguji 2 --',
+                      ),
+                    ),
+                  ],
+                );
+              }
             ),
           ),
           actions: [
@@ -478,8 +531,13 @@ class _FormMahasiswaScreenState extends State<FormMahasiswaScreen> {
                     );
 
                     if (context.mounted) {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pop();
+
+                      if (result.data['response']) {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();                  
+                      } else {
+                        Navigator.of(context).pop();
+                      }
 
                       ScaffoldMessenger.of(context)
                         ..hideCurrentSnackBar()
